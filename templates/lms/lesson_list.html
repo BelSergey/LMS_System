@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Уроки{% endblock %}
+{% block content %}
+<h1>Уроки</h1>
+<a href="{% url 'lesson_create' %}" class="btn btn-primary mb-3">Добавить урок</a>
+<ul>
+    {% for lesson in lessons %}
+        <li><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.title }}</a> ({{ lesson.course.title }})</li>
+    {% empty %}
+        <li>Уроков пока нет.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

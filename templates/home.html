@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Добро пожаловать в LMS!</h1>
+    <p class="lead">Система управления курсами и уроками.</p>
+    <hr class="my-4">
+    <a class="btn btn-primary btn-lg" href="{% url 'lms:course_list' %}" role="button">Курсы</a>
+    <a class="btn btn-secondary btn-lg" href="{% url 'lms:lesson_list' %}" role="button">Уроки</a>
+</div>
+{% endblock %}

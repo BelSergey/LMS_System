@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block content %}
+<h1>{{ lesson.title }}</h1>
+{% if lesson.preview %}
+    <img src="{{ lesson.preview.url }}" class="img-fluid" alt="{{ lesson.title }}">
+{% endif %}
+<p>{{ lesson.description }}</p>
+{% if lesson.video_url %}
+    <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" src="{{ lesson.video_url }}" allowfullscreen></iframe>
+    </div>
+{% endif %}
+<p><strong>Курс:</strong> <a href="{% url 'course_detail' lesson.course.pk %}">{{ lesson.course.title }}</a></p>
+
+{% if user.is_staff %}
+    <a href="{% url 'lesson_update' lesson.pk %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
+{% endif %}
+<a href="{% url 'lesson_list' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}
