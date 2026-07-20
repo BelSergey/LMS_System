@@ -11,11 +11,11 @@
         <iframe class="embed-responsive-item" src="{{ lesson.video_url }}" allowfullscreen></iframe>
     </div>
 {% endif %}
-<p><strong>Курс:</strong> <a href="{% url 'course_detail' lesson.course.pk %}">{{ lesson.course.title }}</a></p>
+<p><strong>Курс:</strong> <a href="{% url 'lms:course_detail' lesson.course.pk %}">{{ lesson.course.title }}</a></p>
 
 {% if user.is_staff %}
-    <a href="{% url 'lesson_update' lesson.pk %}" class="btn btn-warning">Редактировать</a>
-    <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
+    <a href="{% url 'lms:lesson_update' lesson.pk %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'lms:lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
 {% endif %}
-<a href="{% url 'lesson_list' %}" class="btn btn-secondary">Назад к списку</a>
+<a href="{% url 'lms:lesson_list' %}" class="btn btn-secondary">Назад к списку</a>
 {% endblock %}

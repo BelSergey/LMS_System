@@ -6,6 +6,6 @@
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-primary">Сохранить</button>
-    <a href="{% url 'lesson_list' %}" class="btn btn-secondary">Отмена</a>
+    <a href="{% url 'lms:lesson_list' %}" class="btn btn-secondary">Отмена</a>
 </form>
 {% endblock %}

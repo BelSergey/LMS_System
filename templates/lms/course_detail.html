@@ -9,14 +9,14 @@
 <h2>Уроки курса</h2>
 <ul>
     {% for lesson in course.lessons.all %}
-        <li><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.title }}</a></li>
+        <li><a href="{% url 'lms:lesson_detail' lesson.pk %}">{{ lesson.title }}</a></li>
     {% empty %}
         <li>Уроков пока нет.</li>
     {% endfor %}
 </ul>
 {% if user.is_staff %}
-    <a href="{% url 'course_update' course.pk %}" class="btn btn-warning">Редактировать</a>
-    <a href="{% url 'course_delete' course.pk %}" class="btn btn-danger">Удалить</a>
+    <a href="{% url 'lms:course_update' course.pk %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'lms:course_delete' course.pk %}" class="btn btn-danger">Удалить</a>
 {% endif %}
-<a href="{% url 'course_list' %}" class="btn btn-secondary">Назад к списку</a>
+<a href="{% url 'lms:course_list' %}" class="btn btn-secondary">Назад к списку</a>
 {% endblock %}

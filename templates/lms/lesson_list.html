@@ -2,10 +2,12 @@
 {% block title %}Уроки{% endblock %}
 {% block content %}
 <h1>Уроки</h1>
-<a href="{% url 'lesson_create' %}" class="btn btn-primary mb-3">Добавить урок</a>
+{% if user.is_staff %}
+    <a href="{% url 'lms:lesson_create' %}" class="btn btn-primary mb-3">Добавить урок</a>
+{% endif %}
 <ul>
     {% for lesson in lessons %}
-        <li><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.title }}</a> ({{ lesson.course.title }})</li>
+        <li><a href="{% url 'lms:lesson_detail' lesson.pk %}">{{ lesson.title }}</a> ({{ lesson.course.title }})</li>
     {% empty %}
         <li>Уроков пока нет.</li>
     {% endfor %}

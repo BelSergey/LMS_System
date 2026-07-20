@@ -54,32 +54,32 @@ class CourseCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Course
     form_class = CourseForm
     template_name = 'lms/course_form.html'
-    success_url = reverse_lazy('course_list')
+    success_url = reverse_lazy('lms:course_list')
 
 class CourseUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Course
     form_class = CourseForm
     template_name = 'lms/course_form.html'
-    success_url = reverse_lazy('course_list')
+    success_url = reverse_lazy('lms:course_list')
 
 class CourseDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Course
     template_name = 'lms/course_confirm_delete.html'
-    success_url = reverse_lazy('course_list')
+    success_url = reverse_lazy('lms:course_list')
 
 class LessonCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Lesson
     form_class = LessonForm
     template_name = 'lms/lesson_form.html'
-    success_url = reverse_lazy('lesson_list')
+    success_url = reverse_lazy('lms:lesson_list')
 
 class LessonUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Lesson
     form_class = LessonForm
     template_name = 'lms/lesson_form.html'
-    success_url = reverse_lazy('lesson_list')
+    success_url = reverse_lazy('lms:lesson_list')
 
 class LessonDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Lesson
     template_name = 'lms/lesson_confirm_delete.html'
-    success_url = reverse_lazy('lesson_list')
+    success_url = reverse_lazy('lms:lesson_list')

@@ -2,7 +2,9 @@
 {% block title %}Курсы{% endblock %}
 {% block content %}
 <h1>Курсы</h1>
-<a href="{% url 'lms:course_create' %}" class="btn btn-primary mb-3">Добавить курс</a>
+{% if user.is_staff %}
+    <a href="{% url 'lms:course_create' %}" class="btn btn-primary mb-3">Добавить курс</a>
+{% endif %}
 <ul>
     {% for course in courses %}
         <li><a href="{% url 'lms:course_detail' course.pk %}">{{ course.title }}</a></li>
