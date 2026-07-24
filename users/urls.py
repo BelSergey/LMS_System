@@ -9,6 +9,7 @@ app_name = 'users'
 
 urlpatterns = [
     path('profile/', ProfileUpdateView.as_view(), name='profile'),
+    path('api/profile/<int:id>/', ProfileView.as_view(), name='api-profile'),
     path('register/', register, name='register'),
     path('confirm/<uidb64>/<token>/', confirm_email, name='confirm_email'),
     path('login/', EmailLoginView.as_view(), name='login'),

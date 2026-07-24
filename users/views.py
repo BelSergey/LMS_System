@@ -13,7 +13,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .forms import RegisterForm, EmailAuthenticationForm
 from .models import User
@@ -109,7 +109,7 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
 class ProfileView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
