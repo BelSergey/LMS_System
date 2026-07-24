@@ -3,26 +3,31 @@ from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
     LoginView,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
-from django.urls import reverse_lazy
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 from django.core.mail import send_mail
 from django.conf import settings
-from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import AllowAny
 
-from .forms import RegisterForm, EmailAuthenticationForm
-from .models import User
-from .serializers import UserSerializer
-from .tokens import email_confirmation_token
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.edit import UpdateView
 from django.urls import reverse_lazy
-from .forms import UserProfileForm
+from django_filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.permissions import AllowAny
+
+from .forms import RegisterForm, EmailAuthenticationForm, UserProfileForm
+from .models import User, Payment
+from .serializers import UserSerializer, PaymentSerializer
+from .tokens import email_confirmation_token
+from .filters import PaymentFilter
+
+
 
 
 def _send_confirmation_email(request, user):
@@ -120,3 +125,12 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+class PaymentListAPIView(ListAPIView):
+        queryset = Payment.objects.select_related('user', 'paid_course', 'paid_lesson').all()
+        serializer_class = PaymentSerializer
+        permission_classes = [AllowAny]
+        filter_backends = [DjangoFilterBackend, OrderingFilter]
+        filterset_class = PaymentFilter
+        ordering_fields = ['payment_date']
+        ordering = ['-payment_date']
