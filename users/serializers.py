@@ -32,3 +32,8 @@ class PaymentSerializer(serializers.ModelSerializer):
                   'paid_course_id', 'paid_lesson_id', 'amount', 'payment_method']
 
 
+class UserProfileSerializer(UserSerializer):
+    payments = PaymentSerializer(many=True, read_only=True)
+
+    class Meta:
+        fields = UserSerializer.Meta.fields + ['payments']

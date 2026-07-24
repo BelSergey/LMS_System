@@ -19,11 +19,11 @@ from django_filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .forms import RegisterForm, EmailAuthenticationForm, UserProfileForm
 from .models import User, Payment
-from .serializers import UserSerializer, PaymentSerializer
+from .serializers import UserProfileSerializer, PaymentSerializer
 from .tokens import email_confirmation_token
 from .filters import PaymentFilter
 
@@ -113,8 +113,8 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
 
 class ProfileView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
