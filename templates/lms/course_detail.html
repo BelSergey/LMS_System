@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ course.title }}{% endblock %}
+{% block content %}
+<h1>{{ course.title }}</h1>
+{% if course.preview %}
+    <img src="{{ course.preview.url }}" class="img-fluid" alt="{{ course.title }}">
+{% endif %}
+<p>{{ course.description }}</p>
+<h2>Уроки курса</h2>
+<ul>
+    {% for lesson in course.lessons.all %}
+        <li><a href="{% url 'lms:lesson_detail' lesson.pk %}">{{ lesson.title }}</a></li>
+    {% empty %}
+        <li>Уроков пока нет.</li>
+    {% endfor %}
+</ul>
+{% if user.is_staff %}
+    <a href="{% url 'lms:course_update' course.pk %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'lms:course_delete' course.pk %}" class="btn btn-danger">Удалить</a>
+{% endif %}
+<a href="{% url 'lms:course_list' %}" class="btn btn-secondary">Назад к списку</a>
+{% endblock %}
