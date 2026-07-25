@@ -15,7 +15,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.edit import UpdateView
 from django.urls import reverse_lazy
-from django_filters import OrderingFilter
+from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView

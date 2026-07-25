@@ -83,12 +83,12 @@ class Payment(models.Model):
 )
 
 
-class Meta:
-    verbose_name = 'платёж'
-    verbose_name_plural = 'платежи'
-    ordering = ['-payment_date']
+    class Meta:
+        verbose_name = 'платёж'
+        verbose_name_plural = 'платежи'
+        ordering = ['-payment_date']
 
 
-def __str__(self):
-    target = self.paid_course or self.paid_lesson
-    return f'{self.user} — {target} — {self.amount}'
+    def __str__(self):
+        target = self.paid_course or self.paid_lesson
+        return f'{self.user} — {target} — {self.amount}'
