@@ -19,11 +19,12 @@ from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .forms import RegisterForm, EmailAuthenticationForm, UserProfileForm
 from .models import User, Payment
-from .serializers import UserProfileSerializer, PaymentSerializer
+from .serializers import UserProfileSerializer, PaymentSerializer, UserSerializer
 from .tokens import email_confirmation_token
 from .filters import PaymentFilter
 
@@ -125,6 +126,12 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
 
 class PaymentListAPIView(ListAPIView):
         queryset = Payment.objects.select_related('user', 'paid_course', 'paid_lesson').all()
