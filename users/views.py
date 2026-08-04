@@ -24,10 +24,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .forms import RegisterForm, EmailAuthenticationForm, UserProfileForm
 from .models import User, Payment
-from .serializers import UserProfileSerializer, PaymentSerializer, UserSerializer, RegisterSerializer
+from .serializers import UserProfileSerializer, PaymentSerializer, UserSerializer, RegisterSerializer, PublicUserSerializer
 from .tokens import email_confirmation_token
 from .filters import PaymentFilter
 from .utils import send_confirmation_email
+from .permissions import IsProfileOwner
+
+
 
 
 
@@ -99,8 +102,6 @@ class UserPasswordResetConfirmView(PasswordResetConfirmView):
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "users/password_reset_complete.html"
 
-from .permissions import IsProfileOwner
-from .serializers import UserProfileSerializer, PublicUserSerializer
 
 class ProfileView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
