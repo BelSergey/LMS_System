@@ -38,14 +38,36 @@ class CourseViewSet(ModelViewSet):
         serializer.save(owner=self.request.user)
 
 class LessonListCreateView(ListCreateAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), ~IsModerator()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Lesson.objects.none()
+        if user.groups.filter(name='moderators').exists():
+            return Lesson.objects.all()
+        return Lesson.objects.filter(owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
-    permission_classes = [AllowAny]
+    queryset = Lesson.objects.all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated(), IsOwner() | IsModerator()]
+        elif self.request.method in ['PUT', 'PATCH']:
+            return [IsAuthenticated(), IsOwner() | IsModerator()]
+        elif self.request.method == 'DELETE':
+            return [IsAuthenticated(), IsOwner()]
+        return super().get_permissions()
 
 
 class CourseListView(ListView):
