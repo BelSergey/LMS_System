@@ -31,6 +31,7 @@ from .filters import PaymentFilter
 
 
 
+
 def _send_confirmation_email(request, user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = email_confirmation_token.make_token(user)
