@@ -27,23 +27,9 @@ from .models import User, Payment
 from .serializers import UserProfileSerializer, PaymentSerializer, UserSerializer, RegisterSerializer
 from .tokens import email_confirmation_token
 from .filters import PaymentFilter
+from .utils import send_confirmation_email
 
 
-
-
-
-def _send_confirmation_email(request, user):
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = email_confirmation_token.make_token(user)
-    confirm_url = request.build_absolute_uri(
-        reverse_lazy("users:confirm_email", kwargs={"uidb64": uid, "token": token})
-    )
-    subject = "Подтверждение регистрации"
-    body = (
-        f"Здравствуйте, {user.first_name or user.email}!\n\n"
-        f"Для подтверждения email перейдите по ссылке:\n{confirm_url}\n"
-    )
-    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
 
 
 def register(request):
@@ -51,7 +37,7 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            _send_confirmation_email(request, user)
+            send_confirmation_email(request, user)
             messages.success(
                 request,
                 "Регистрация прошла успешно. Проверьте почту и перейдите по ссылке для подтверждения email.",
@@ -113,11 +99,27 @@ class UserPasswordResetConfirmView(PasswordResetConfirmView):
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "users/password_reset_complete.html"
 
+from .permissions import IsProfileOwner
+from .serializers import UserProfileSerializer, PublicUserSerializer
+
 class ProfileView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+
+        if self.request.method == 'GET':
+            obj = self.get_object()
+            if obj == self.request.user:
+                return UserProfileSerializer
+            return PublicUserSerializer
+        return UserProfileSerializer
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return [IsAuthenticated(), IsProfileOwner()]
+        return [IsAuthenticated()]
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
@@ -144,17 +146,9 @@ class UserViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        self._send_confirmation_email(user)
+        send_confirmation_email(self.request,user)
 
-    def _send_confirmation_email(self, user):
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = email_confirmation_token.make_token(user)
-        confirm_url = self.request.build_absolute_uri(
-            reverse_lazy("users:confirm_email", kwargs={"uidb64": uid, "token": token})
-        )
-        subject = "Подтверждение регистрации"
-        body = f"Здравствуйте, {user.first_name or user.email}!\n\nДля подтверждения email перейдите по ссылке:\n{confirm_url}\n"
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+
 
 class PaymentListAPIView(ListAPIView):
         queryset = Payment.objects.select_related('user', 'paid_course', 'paid_lesson').all()
