@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.views.generic import ListView, DetailView
 from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
@@ -8,12 +8,34 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from .forms import CourseForm, LessonForm
+from .permissions import IsOwner, IsModerator
 
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), ~IsModerator()]
+        elif self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        elif self.action in ['update', 'partial_update']:
+            return [IsAuthenticated(), IsOwner() | IsModerator()]
+        elif self.action == 'destroy':
+            return [IsAuthenticated(), IsOwner()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Course.objects.none()
+        if user.groups.filter(name='moderators').exists():
+            return Course.objects.all()
+        return Course.objects.filter(owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 class LessonListCreateView(ListCreateAPIView):
     queryset = Lesson.objects.all()
