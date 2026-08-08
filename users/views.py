@@ -154,7 +154,7 @@ class UserViewSet(ModelViewSet):
 class PaymentListAPIView(ListAPIView):
         queryset = Payment.objects.select_related('user', 'paid_course', 'paid_lesson').all()
         serializer_class = PaymentSerializer
-        permission_classes = [AllowAny]
+        permission_classes = [IsAuthenticated]
         filter_backends = [DjangoFilterBackend, OrderingFilter]
         filterset_class = PaymentFilter
         ordering_fields = ['payment_date']
