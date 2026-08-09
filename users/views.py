@@ -102,26 +102,6 @@ class UserPasswordResetConfirmView(PasswordResetConfirmView):
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "users/password_reset_complete.html"
 
-
-class ProfileView(RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    lookup_field = 'id'
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-
-        if self.request.method == 'GET':
-            obj = self.get_object()
-            if obj == self.request.user:
-                return UserProfileSerializer
-            return PublicUserSerializer
-        return UserProfileSerializer
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            return [IsAuthenticated(), IsProfileOwner()]
-        return [IsAuthenticated()]
-
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserProfileForm
@@ -138,6 +118,8 @@ class UserViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
+        if self.action in ('update', 'partial_update', 'destroy'):
+            return [IsAuthenticated(), IsProfileOwner()]
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
