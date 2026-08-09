@@ -26,22 +26,17 @@ class CourseViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            return [IsAuthenticated(), ~IsModerator()]
+            return [IsAuthenticated(), (~IsModerator)()]
         elif self.action in ['list', 'retrieve']:
             return [IsAuthenticated()]
         elif self.action in ['update', 'partial_update']:
-            return [IsAuthenticated(), IsOwner() | IsModerator()]
+            return [IsAuthenticated(), (IsOwner | IsModerator)()]
         elif self.action == 'destroy':
-            return [IsAuthenticated(), IsOwner()]
+            return [IsAuthenticated(), (IsOwner)()]
         return super().get_permissions()
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.is_authenticated:
-            return Course.objects.none()
-        if user.groups.filter(name='moderators').exists():
-            return Course.objects.all()
-        return Course.objects.filter(owner=user)
+        return Course.objects.filter()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -74,7 +69,7 @@ class LessonListCreateView(ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsAuthenticated(), ~IsModerator()]
+            return [IsAuthenticated(), (~IsModerator)()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -94,11 +89,11 @@ class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAuthenticated(), IsOwner() | IsModerator()]
+            return [IsAuthenticated(), (IsOwner | IsModerator)()]
         elif self.request.method in ['PUT', 'PATCH']:
-            return [IsAuthenticated(), IsOwner() | IsModerator()]
+            return [IsAuthenticated(), (IsOwner | IsModerator)()]
         elif self.request.method == 'DELETE':
-            return [IsAuthenticated(), IsOwner()]
+            return [IsAuthenticated(), (IsOwner)()]
         return super().get_permissions()
 
 

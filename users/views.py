@@ -125,6 +125,9 @@ class UserViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return RegisterSerializer
+        if self.action == 'retrieve':
+            obj = self.get_object()
+            return UserProfileSerializer if obj == self.request.user else PublicUserSerializer
         return UserSerializer
 
     def perform_create(self, serializer):
