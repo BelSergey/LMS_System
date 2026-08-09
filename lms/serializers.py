@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from .models import Course, Lesson
+from .validators import YoutubeLinkValidator
 
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = '__all__'
+        validators = [YoutubeLinkValidator(field='video_url')]
 
 class CourseSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()

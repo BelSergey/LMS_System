@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ProfileView, register, confirm_email, EmailLoginView,UserViewSet,
+    register, confirm_email, EmailLoginView,UserViewSet,
     logout_view, UserPasswordResetView, UserPasswordResetDoneView,
     UserPasswordResetConfirmView, UserPasswordResetCompleteView, ProfileUpdateView, PaymentListAPIView
 )
@@ -15,7 +15,6 @@ app_name = 'users'
 urlpatterns = [
     path('', include(router.urls)),
     path('profile/', ProfileUpdateView.as_view(), name='profile'),
-    path('api/profile/<int:id>/', ProfileView.as_view(), name='api-profile'),
     path('api/payments/', PaymentListAPIView.as_view(), name='payment-list'),
     path('register/', register, name='register'),
     path('confirm/<uidb64>/<token>/', confirm_email, name='confirm_email'),
