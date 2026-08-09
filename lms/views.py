@@ -16,11 +16,13 @@ from .forms import CourseForm, LessonForm
 from .permissions import IsOwner, IsModerator
 from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
+from .paginators import CoursePagination, LessonPagination
 
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = CoursePagination
 
     def get_permissions(self):
         if self.action == 'create':
@@ -68,6 +70,7 @@ class SubscriptionAPIView(APIView):
 
 class LessonListCreateView(ListCreateAPIView):
     serializer_class = LessonSerializer
+    pagination_class = LessonPagination
 
     def get_permissions(self):
         if self.request.method == 'POST':
