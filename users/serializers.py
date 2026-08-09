@@ -1,5 +1,5 @@
 from  rest_framework import serializers
-from .models import User, Payment
+from .models import User, Payment, Subscription
 
 from lms.models import Course, Lesson
 from  lms.serializers import CourseSerializer, LessonSerializer
@@ -58,3 +58,9 @@ class PublicUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'first_name', 'phone', 'city', 'avatar']
         read_only_fields = fields
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['id', 'user', 'course', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']

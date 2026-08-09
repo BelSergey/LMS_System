@@ -1,14 +1,21 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 from django.views.generic import ListView, DetailView
-from .models import Course, Lesson
-from .serializers import CourseSerializer, LessonSerializer
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
+
+from users.models import Subscription
+
 from .forms import CourseForm, LessonForm
 from .permissions import IsOwner, IsModerator
+from .models import Course, Lesson
+from .serializers import CourseSerializer, LessonSerializer
 
 
 class CourseViewSet(ModelViewSet):
@@ -36,6 +43,28 @@ class CourseViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+class SubscriptionAPIView(APIView):
+    def get_permissions(self):
+        return [IsAuthenticated()]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course_id')
+        course_item = get_object_or_404(Course, pk=course_id)
+
+        subs_item = Subscription.objects.filter(user=user, course=course_item)
+
+        if subs_item.exists():
+            subs_item.delete()
+            message = 'подписка удалена'
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = 'подписка добавлена'
+
+        return Response({'message': message})
+
 
 class LessonListCreateView(ListCreateAPIView):
     serializer_class = LessonSerializer
