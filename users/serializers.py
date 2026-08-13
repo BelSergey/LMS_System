@@ -29,8 +29,8 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ['id', 'user', 'payment_date', 'paid_course', 'paid_lesson',
-                  'paid_course_id', 'paid_lesson_id', 'amount', 'payment_method']
-
+                  'paid_course_id', 'paid_lesson_id', 'amount', 'payment_method', 'session_id', 'payment_link']
+        read_only_fields = ['session_id', 'payment_link']
 
 class UserProfileSerializer(UserSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
