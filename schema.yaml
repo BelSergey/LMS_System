@@ -422,6 +422,10 @@ paths:
           type: string
           format: date
       - in: query
+        name: payment_link
+        schema:
+          type: string
+      - in: query
         name: payment_method
         schema:
           type: string
@@ -432,6 +436,10 @@ paths:
         description: |-
           * `cash` - Наличные
           * `transfer` - Перевод на счёт
+      - in: query
+        name: session_id
+        schema:
+          type: string
       - in: query
         name: user
         schema:
@@ -448,6 +456,56 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Payment'
+          description: ''
+  /users/api/payments/{id}/status/:
+    get:
+      operationId: users_api_payments_status_retrieve
+      description: Возвращает текущий статус оплаты по идентификатору платежа в нашей
+        системе.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+          description: ''
+  /users/api/payments/create/:
+    post:
+      operationId: users_api_payments_create_create
+      description: 'Создаёт платёж: продукт и цену в Stripe, сессию оплаты, сохраняет
+        ссылку на оплату и возвращает данные платежа.'
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
           description: ''
   /users/api/users/:
     get:
@@ -824,14 +882,40 @@ components:
           allOf:
           - $ref: '#/components/schemas/PaymentMethodEnum'
           title: Способ оплаты
+        session_id:
+          type: string
+          readOnly: true
+          nullable: true
+          title: ID сессии Stripe
+        payment_link:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          title: Ссылка на оплату
       required:
       - amount
       - id
       - paid_course
       - paid_lesson
       - payment_date
+      - payment_link
       - payment_method
+      - session_id
       - user
+    PaymentCreateRequest:
+      type: object
+      properties:
+        course_id:
+          type: integer
+        lesson_id:
+          type: integer
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - amount
     PaymentMethodEnum:
       enum:
       - cash
@@ -840,6 +924,13 @@ components:
       description: |-
         * `cash` - Наличные
         * `transfer` - Перевод на счёт
+    PaymentStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
     Register:
       type: object
       properties:

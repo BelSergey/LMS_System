@@ -33,7 +33,7 @@ from .tokens import email_confirmation_token
 from .filters import PaymentFilter
 from .utils import send_confirmation_email
 from .permissions import IsProfileOwner
-from .services import create_stripe_price, create_stripe_product, create_stripe_checkout_session
+from .services import create_stripe_price, create_stripe_product, create_stripe_checkout_session, retrieve_stripe_session
 
 from lms.models import Course, Lesson
 
@@ -205,3 +205,22 @@ class PaymentCreateAPIView(APIView):
 
         serializer = PaymentSerializer(payment, context={'request': request})
         return Response(serializer.data, status=201)
+
+@extend_schema(
+    responses=inline_serializer(
+        name='PaymentStatusResponse',
+        fields={'status': drf_serializers.CharField()},
+    ),
+    description='Возвращает текущий статус оплаты по идентификатору платежа в нашей системе.',
+)
+class PaymentStatusAPIView(APIView):
+    def get_permissions(self):
+        return [IsAuthenticated()]
+
+    def get(self, request, pk, *args, **kwargs):
+        payment = get_object_or_404(Payment, pk=pk, user=request.user)
+        if not payment.session_id:
+            return Response({'detail': 'Для этого платежа нет сессии Stripe.'}, status=400)
+
+        session = retrieve_stripe_session(payment.session_id)
+        return Response({'status': session.payment_status})
