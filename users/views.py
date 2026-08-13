@@ -19,8 +19,11 @@ from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from drf_spectacular.utils import extend_schema
 
 from .forms import RegisterForm, EmailAuthenticationForm, UserProfileForm
 from .models import User, Payment
@@ -125,14 +128,20 @@ class UserViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return RegisterSerializer
-        if self.action == 'retrieve':
-            obj = self.get_object()
-            return UserProfileSerializer if obj == self.request.user else PublicUserSerializer
         return UserSerializer
 
     def perform_create(self, serializer):
         user = serializer.save()
         send_confirmation_email(self.request,user)
+
+    @extend_schema(responses=UserProfileSerializer)
+    def retrieve(self, request, *args, **kwargs):
+       instance = self.get_object()
+       if instance == request.user:
+           serializer = UserProfileSerializer(instance, context={'request': request})
+       else:
+           serializer = PublicUserSerializer(instance, context={'request': request})
+       return Response(serializer.data)
 
 
 

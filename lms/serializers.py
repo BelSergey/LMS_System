@@ -1,4 +1,6 @@
+
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Course, Lesson
 from .validators import YoutubeLinkValidator
 
@@ -18,10 +20,10 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'title', 'preview', 'description', 'lessons_count', 'lessons', 'is_subscribed']
-
+    @extend_schema_field(serializers.IntegerField)
     def get_lessons_count(self, obj):
         return obj.lessons.count()
-
+    @extend_schema_field(serializers.BooleanField)
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = getattr(request, 'user', None)

@@ -3,6 +3,9 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import serializers as drf_serializers
+
+from drf_spectacular.utils import extend_schema, inline_serializer
 
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -32,7 +35,7 @@ class CourseViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update']:
             return [IsAuthenticated(), (IsOwner | IsModerator)()]
         elif self.action == 'destroy':
-            return [IsAuthenticated(), (IsOwner)()]
+            return [IsAuthenticated(), (~IsModerator)(), (IsOwner)()]
         return super().get_permissions()
 
     def get_queryset(self):
@@ -41,7 +44,17 @@ class CourseViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-
+@extend_schema(
+    request=inline_serializer(
+        name='SubscriptionRequest',
+        fields={'course_id': drf_serializers.IntegerField()},
+    ),
+    responses=inline_serializer(
+        name='SubscriptionResponse',
+        fields={'message': drf_serializers.CharField()},
+    ),
+    description='Подписка/отписка от обновлений курса (toggle: если подписки нет — создаёт, если есть — удаляет).',
+)
 class SubscriptionAPIView(APIView):
     def get_permissions(self):
         return [IsAuthenticated()]
