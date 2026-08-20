@@ -20,6 +20,7 @@ from .permissions import IsOwner, IsModerator
 from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
 from .paginators import CoursePagination, LessonPagination
+from .services import maybe_notify_subscribers
 
 
 class CourseViewSet(ModelViewSet):
@@ -43,6 +44,11 @@ class CourseViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+        maybe_notify_subscribers(course)
+
 
 @extend_schema(
     request=inline_serializer(
@@ -96,6 +102,7 @@ class LessonListCreateView(ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+
 class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -109,30 +116,39 @@ class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
             return [IsAuthenticated(), (IsOwner)()]
         return super().get_permissions()
 
+    def perform_update(self, serializer):
+        lesson = serializer.save()
+        maybe_notify_subscribers(lesson.course)
+
 
 class CourseListView(ListView):
     model = Course
     template_name = 'lms/course_list.html'
     context_object_name = 'courses'
 
+
 class LessonListView(ListView):
     model = Lesson
     template_name = 'lms/lesson_list.html'
     context_object_name = 'lessons'
+
 
 class CourseDetailView(DetailView):
     model = Course
     template_name = 'lms/course_detail.html'
     context_object_name = 'course'
 
+
 class LessonDetailView(DetailView):
     model = Lesson
     template_name = 'lms/lesson_detail.html'
     context_object_name = 'lesson'
 
+
 class StaffRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff
+
 
 class CourseCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Course
@@ -140,16 +156,19 @@ class CourseCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     template_name = 'lms/course_form.html'
     success_url = reverse_lazy('lms:course_list')
 
+
 class CourseUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Course
     form_class = CourseForm
     template_name = 'lms/course_form.html'
     success_url = reverse_lazy('lms:course_list')
 
+
 class CourseDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Course
     template_name = 'lms/course_confirm_delete.html'
     success_url = reverse_lazy('lms:course_list')
+
 
 class LessonCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Lesson
@@ -157,11 +176,13 @@ class LessonCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     template_name = 'lms/lesson_form.html'
     success_url = reverse_lazy('lms:lesson_list')
 
+
 class LessonUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Lesson
     form_class = LessonForm
     template_name = 'lms/lesson_form.html'
     success_url = reverse_lazy('lms:lesson_list')
+
 
 class LessonDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Lesson

@@ -1,10 +1,13 @@
 from django.db import models
 from django.conf import settings
 
+
 class Course(models.Model):
     title = models.CharField(max_length=200)
     preview = models.ImageField(upload_to='course_previews/', blank=True, null=True)
     description = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='дата обновления')
+    last_notified_at = models.DateTimeField(null=True, blank=True, verbose_name='дата последней рассылки')
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -12,8 +15,10 @@ class Course(models.Model):
         blank=True,
         related_name='courses'
     )
+
     def __str__(self):
         return self.title
+
 
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
