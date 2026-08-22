@@ -12,6 +12,9 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
 
 from users.models import Subscription
 
@@ -20,7 +23,8 @@ from .permissions import IsOwner, IsModerator
 from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
 from .paginators import CoursePagination, LessonPagination
-from .services import maybe_notify_subscribers
+
+from .tasks import send_course_update_notification
 
 
 class CourseViewSet(ModelViewSet):
@@ -46,8 +50,20 @@ class CourseViewSet(ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
+        previous_updated_at = self.get_object().updated_at
+        updated_recently = (
+                timezone.now() - previous_updated_at < timedelta(hours=4)
+        )
+
         course = serializer.save()
-        maybe_notify_subscribers(course)
+
+        if not updated_recently:
+            transaction.on_commit(
+                lambda: send_course_update_notification.delay(
+                    course.pk,
+                    course.title,
+                )
+            )
 
 
 @extend_schema(
@@ -117,8 +133,19 @@ class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         return super().get_permissions()
 
     def perform_update(self, serializer):
+        course = self.get_object().course
+        previous_updated_at = course.updated_at
+        updated_recently = (
+                timezone.now() - previous_updated_at < timedelta(hours=4)
+        )
         lesson = serializer.save()
-        maybe_notify_subscribers(lesson.course)
+        if not updated_recently:
+            transaction.on_commit(
+                lambda: send_course_update_notification.delay(
+                lesson.course.pk,
+                lesson.course.title,
+            )
+        )
 
 
 class CourseListView(ListView):

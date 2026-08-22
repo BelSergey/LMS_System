@@ -1,13 +1,16 @@
-from celery import shared_task
-from django.utils import timezone
 from datetime import timedelta
 
-from .models import User
+from celery import shared_task
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 
 @shared_task
-def deactivate_inactive_users():
+def block_inactive_users() -> int:
     cutoff = timezone.now() - timedelta(days=30)
-    users = User.objects.filter(last_login__lt=cutoff, is_active=True)
-    count = users.update(is_active=False)
-    return f'Deactivated {count} users'
+    user_model = get_user_model()
+
+    return user_model.objects.filter(
+        is_active=True,
+        last_login__lt=cutoff,
+    ).update(is_active=False)
