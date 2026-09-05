@@ -8,7 +8,15 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("first_name",'last_name','phone', 'city', "email", "password1", "password2")
+        fields = (
+            "first_name",
+            "last_name",
+            "phone",
+            "city",
+            "email",
+            "password1",
+            "password2",
+        )
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -25,7 +33,8 @@ class EmailAuthenticationForm(AuthenticationForm):
 class PasswordResetRequestForm(forms.Form):
     email = forms.EmailField(label="Email")
 
+
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'phone', 'city', 'avatar']
+        fields = ["first_name", "last_name", "phone", "city", "avatar"]
