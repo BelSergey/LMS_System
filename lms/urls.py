@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CourseViewSet, LessonListCreateView, LessonRetrieveUpdateDestroyView,
     CourseListView, LessonListView, CourseDetailView, LessonDetailView, CourseCreateView, CourseUpdateView,
-    CourseDeleteView, LessonCreateView, LessonUpdateView, LessonDeleteView
+    CourseDeleteView, LessonCreateView, LessonUpdateView, LessonDeleteView, SubscriptionAPIView
 )
 
 router = DefaultRouter()
@@ -14,8 +14,11 @@ app_name = 'lms'
 urlpatterns = [
     # API
     path('', include(router.urls)),
+
     path('lessons/', LessonListCreateView.as_view(), name='lesson-list-create'),
     path('lessons/<int:pk>/', LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),
+
+    path('subscribe/', SubscriptionAPIView.as_view(), name='subscription'),
 
     path('web/courses/', CourseListView.as_view(), name='course_list'),
     path('web/lessons/', LessonListView.as_view(), name='lesson_list'),
