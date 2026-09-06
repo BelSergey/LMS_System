@@ -10,7 +10,7 @@ def create_stripe_product(name: str):
 
 def create_stripe_price(product_id: str, amount):
     return stripe.Price.create(
-        currency="usd",
+        currency='usd',
         unit_amount=int(amount * 100),
         product=product_id,
     )
@@ -18,10 +18,10 @@ def create_stripe_price(product_id: str, amount):
 
 def create_stripe_checkout_session(price_id: str):
     return stripe.checkout.Session.create(
-        line_items=[{"price": price_id, "quantity": 1}],
-        mode="payment",
-        success_url="http://127.0.0.1:8000/users/api/payments/success/",
-        cancel_url="http://127.0.0.1:8000/users/api/payments/cancel/",
+        line_items=[{'price': price_id, 'quantity': 1}],
+        mode='payment',
+        success_url='http://127.0.0.1:8000/users/api/payments/success/',
+        cancel_url='http://127.0.0.1:8000/users/api/payments/cancel/',
     )
 
 

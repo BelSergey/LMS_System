@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers as drf_serializers
@@ -33,13 +33,13 @@ class CourseViewSet(ModelViewSet):
     pagination_class = CoursePagination
 
     def get_permissions(self):
-        if self.action == "create":
+        if self.action == 'create':
             return [IsAuthenticated(), (~IsModerator)()]
-        elif self.action in ["list", "retrieve"]:
+        elif self.action in ['list', 'retrieve']:
             return [IsAuthenticated()]
-        elif self.action in ["update", "partial_update"]:
+        elif self.action in ['update', 'partial_update']:
             return [IsAuthenticated(), (IsOwner | IsModerator)()]
-        elif self.action == "destroy":
+        elif self.action == 'destroy':
             return [IsAuthenticated(), (~IsModerator)(), (IsOwner)()]
         return super().get_permissions()
 
@@ -51,7 +51,9 @@ class CourseViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         previous_updated_at = self.get_object().updated_at
-        updated_recently = timezone.now() - previous_updated_at < timedelta(hours=4)
+        updated_recently = (
+                timezone.now() - previous_updated_at < timedelta(hours=4)
+        )
 
         course = serializer.save()
 
@@ -66,14 +68,14 @@ class CourseViewSet(ModelViewSet):
 
 @extend_schema(
     request=inline_serializer(
-        name="SubscriptionRequest",
-        fields={"course_id": drf_serializers.IntegerField()},
+        name='SubscriptionRequest',
+        fields={'course_id': drf_serializers.IntegerField()},
     ),
     responses=inline_serializer(
-        name="SubscriptionResponse",
-        fields={"message": drf_serializers.CharField()},
+        name='SubscriptionResponse',
+        fields={'message': drf_serializers.CharField()},
     ),
-    description="Подписка/отписка от обновлений курса (toggle: если подписки нет — создаёт, если есть — удаляет).",
+    description='Подписка/отписка от обновлений курса (toggle: если подписки нет — создаёт, если есть — удаляет).',
 )
 class SubscriptionAPIView(APIView):
     def get_permissions(self):
@@ -81,19 +83,19 @@ class SubscriptionAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get("course_id")
+        course_id = request.data.get('course_id')
         course_item = get_object_or_404(Course, pk=course_id)
 
         subs_item = Subscription.objects.filter(user=user, course=course_item)
 
         if subs_item.exists():
             subs_item.delete()
-            message = "подписка удалена"
+            message = 'подписка удалена'
         else:
             Subscription.objects.create(user=user, course=course_item)
-            message = "подписка добавлена"
+            message = 'подписка добавлена'
 
-        return Response({"message": message})
+        return Response({'message': message})
 
 
 class LessonListCreateView(ListCreateAPIView):
@@ -101,7 +103,7 @@ class LessonListCreateView(ListCreateAPIView):
     pagination_class = LessonPagination
 
     def get_permissions(self):
-        if self.request.method == "POST":
+        if self.request.method == 'POST':
             return [IsAuthenticated(), (~IsModerator)()]
         return [IsAuthenticated()]
 
@@ -109,7 +111,7 @@ class LessonListCreateView(ListCreateAPIView):
         user = self.request.user
         if not user.is_authenticated:
             return Lesson.objects.none()
-        if user.groups.filter(name="moderators").exists():
+        if user.groups.filter(name='moderators').exists():
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=user)
 
@@ -122,50 +124,52 @@ class LessonRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
 
     def get_permissions(self):
-        if self.request.method == "GET":
+        if self.request.method == 'GET':
             return [IsAuthenticated(), (IsOwner | IsModerator)()]
-        elif self.request.method in ["PUT", "PATCH"]:
+        elif self.request.method in ['PUT', 'PATCH']:
             return [IsAuthenticated(), (IsOwner | IsModerator)()]
-        elif self.request.method == "DELETE":
+        elif self.request.method == 'DELETE':
             return [IsAuthenticated(), (IsOwner)()]
         return super().get_permissions()
 
     def perform_update(self, serializer):
         course = self.get_object().course
         previous_updated_at = course.updated_at
-        updated_recently = timezone.now() - previous_updated_at < timedelta(hours=4)
+        updated_recently = (
+                timezone.now() - previous_updated_at < timedelta(hours=4)
+        )
         lesson = serializer.save()
         if not updated_recently:
             transaction.on_commit(
                 lambda: send_course_update_notification.delay(
-                    lesson.course.pk,
-                    lesson.course.title,
-                )
+                lesson.course.pk,
+                lesson.course.title,
             )
+        )
 
 
 class CourseListView(ListView):
     model = Course
-    template_name = "lms/course_list.html"
-    context_object_name = "courses"
+    template_name = 'lms/course_list.html'
+    context_object_name = 'courses'
 
 
 class LessonListView(ListView):
     model = Lesson
-    template_name = "lms/lesson_list.html"
-    context_object_name = "lessons"
+    template_name = 'lms/lesson_list.html'
+    context_object_name = 'lessons'
 
 
 class CourseDetailView(DetailView):
     model = Course
-    template_name = "lms/course_detail.html"
-    context_object_name = "course"
+    template_name = 'lms/course_detail.html'
+    context_object_name = 'course'
 
 
 class LessonDetailView(DetailView):
     model = Lesson
-    template_name = "lms/lesson_detail.html"
-    context_object_name = "lesson"
+    template_name = 'lms/lesson_detail.html'
+    context_object_name = 'lesson'
 
 
 class StaffRequiredMixin(UserPassesTestMixin):
@@ -176,38 +180,38 @@ class StaffRequiredMixin(UserPassesTestMixin):
 class CourseCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Course
     form_class = CourseForm
-    template_name = "lms/course_form.html"
-    success_url = reverse_lazy("lms:course_list")
+    template_name = 'lms/course_form.html'
+    success_url = reverse_lazy('lms:course_list')
 
 
 class CourseUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Course
     form_class = CourseForm
-    template_name = "lms/course_form.html"
-    success_url = reverse_lazy("lms:course_list")
+    template_name = 'lms/course_form.html'
+    success_url = reverse_lazy('lms:course_list')
 
 
 class CourseDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Course
-    template_name = "lms/course_confirm_delete.html"
-    success_url = reverse_lazy("lms:course_list")
+    template_name = 'lms/course_confirm_delete.html'
+    success_url = reverse_lazy('lms:course_list')
 
 
 class LessonCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
     model = Lesson
     form_class = LessonForm
-    template_name = "lms/lesson_form.html"
-    success_url = reverse_lazy("lms:lesson_list")
+    template_name = 'lms/lesson_form.html'
+    success_url = reverse_lazy('lms:lesson_list')
 
 
 class LessonUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
     model = Lesson
     form_class = LessonForm
-    template_name = "lms/lesson_form.html"
-    success_url = reverse_lazy("lms:lesson_list")
+    template_name = 'lms/lesson_form.html'
+    success_url = reverse_lazy('lms:lesson_list')
 
 
 class LessonDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     model = Lesson
-    template_name = "lms/lesson_confirm_delete.html"
-    success_url = reverse_lazy("lms:lesson_list")
+    template_name = 'lms/lesson_confirm_delete.html'
+    success_url = reverse_lazy('lms:lesson_list')
