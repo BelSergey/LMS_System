@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lms', '0003_alter_lesson_options'),
+        ("lms", "0003_alter_lesson_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='last_notified_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='дата последней рассылки'),
+            model_name="course",
+            name="last_notified_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="дата последней рассылки"
+            ),
         ),
         migrations.AddField(
-            model_name='course',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='дата обновления'),
+            model_name="course",
+            name="updated_at",
+            field=models.DateTimeField(auto_now=True, verbose_name="дата обновления"),
         ),
     ]
