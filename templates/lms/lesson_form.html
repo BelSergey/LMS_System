@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Редактировать урок{% else %}Создать урок{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if object %}Редактировать урок{% else %}Создать урок{% endif %}</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a href="{% url 'lms:lesson_list' %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}
